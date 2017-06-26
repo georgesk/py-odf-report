@@ -1,0 +1,4 @@
+*~
+out_*.odt
+__pycache__/
+*.pyc

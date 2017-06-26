@@ -1,0 +1,19 @@
+#!/usr/bin/python3
+
+import odfReport, os.path, sys
+from odf import text, draw
+
+if __name__=="__main__":
+    thisdir=os.path.dirname(__file__)
+    if len(sys.argv)>1:
+        templatePath=sys.argv[1]
+    else:
+        templatePath=os.path.join(thisdir,"examples/sample1.odt")
+    if len(sys.argv)>2:
+        dataPath=sys.argv[2]
+    else:
+        dataPath=os.path.join(thisdir,"examples/data.csv")
+    
+    reporter=odfReport.Reporter(templatePath, dataPath)
+    print ("Saved files:", reporter.run())
+    
