@@ -184,9 +184,6 @@ class Reporter:
         saved=[]
         for row in self.dictReader:
             self.template.makeCopy()
-            self.template.replaceFields(
-                row,
-                [row[i] for i in row if i.startswith("img_")]
-                )
+            self.template.replaceFields(row)
             saved.append(self.template.save())
         return saved
