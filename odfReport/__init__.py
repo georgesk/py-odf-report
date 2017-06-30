@@ -1,9 +1,13 @@
 """
 Project py-odf-report
+
 © 2017 Georges Khaznadar <georgesk@debian.org>
+
 This project aims to make it easy to generate reports or multiple
 documents from one ODF template and values coming from a database.
-Values can be numbers, strings, dates, images.
+
+Values can be numbers, strings, dates, image references (files in
+the filesystem, or URLs).
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,13 +109,10 @@ class TemplateText:
                 )
         return dico
 
-    def replaceFields(self, dico={}, images=[]):
+    def replaceFields(self, dico={}):
         """
-        @param dico a dictionary (key => value)
-        @param images a list of filenames or URIs for images
-        replaces fields in the generated document when their names
-        match a key in dico; then replaces the images in their
-        order of appearance.
+        @param dico a dictionary (key => value) to replace parts of
+        the template document
         """
         for k in dico:
             if k in self.fields:
