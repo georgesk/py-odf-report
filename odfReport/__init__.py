@@ -27,7 +27,7 @@ from odf import opendocument, text, draw, element
 from copy import deepcopy
 from urllib import request
 from urllib.error import URLError
-import re, os.path, csv, subprocess
+import re, os.path, csv, subprocess, sys
 
 __counter=1 # counter for file names; defaults to 1 when beginning
 
@@ -164,14 +164,18 @@ class Reporter:
     This class is to build reports
     """
 
-    def __init__(self, templatePath, dataPath):
+    def __init__(self, templatePath, dataPath, pdf=False, verbosity=0):
         """
         The constructor.
         @param templatePath filename to build self.template
         @param dataPath filename to build self.dictReader
+        @param pdf set to True if we want PDF output. Defaults to False
+        @param verbosity verbosity level. Defaults to 0 (completely quiet)
         """
         self.template=TemplateText(templatePath)
         self.csvfile=open(dataPath)
+        self.pdf=pdf
+        self.verbosity=verbosity
         dialect = csv.Sniffer().sniff(self.csvfile.read(1024))
         self.csvfile.seek(0)
         self.dictReader=csv.DictReader(self.csvfile, dialect=dialect)
@@ -185,5 +189,25 @@ class Reporter:
         for row in self.dictReader:
             self.template.makeCopy()
             self.template.replaceFields(row)
-            saved.append(self.template.save())
+            if not self.pdf:
+                target=self.template.save()
+                saved.append(target)
+                if self.verbosity > 1:
+                    print(target, "... ", end="")
+                    sys.stdout.flush()
+            else:
+                temporary=self.template.save()
+                target=temporary.replace(".odt",".pdf")
+                if self.verbosity ==1:
+                    print('.', end="")
+                    sys.stdout.flush()
+                elif self.verbosity > 1:
+                    print(target, "... ", end="")
+                    sys.stdout.flush()
+                subprocess.call("unoconv -f pdf {temp} && rm -f {temp}".format(temp=temporary), shell=True)
+                saved.append(target)
+        if self.verbosity > 0:
+            print()
+
+        
         return saved

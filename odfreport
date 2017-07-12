@@ -19,20 +19,33 @@ Values can be numbers, strings, dates, images.
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import odfReport, os.path, sys
+import odfReport, os.path, sys, subprocess
+import argparse
 from odf import text, draw
+
+def _(s):
+    """Change this to use Gettext."""
+    return s
 
 if __name__=="__main__":
     thisdir=os.path.dirname(__file__)
-    if len(sys.argv)>1:
-        templatePath=sys.argv[1]
-    else:
-        templatePath=os.path.join(thisdir,"examples/sample1.odt")
-    if len(sys.argv)>2:
-        dataPath=sys.argv[2]
-    else:
-        dataPath=os.path.join(thisdir,"examples/data.csv")
-    
-    reporter=odfReport.Reporter(templatePath, dataPath)
-    print ("Saved files:", reporter.run())
-    
+    parser = argparse.ArgumentParser(description=_('Produce ODT or PDF files in a batch'))
+    parser.add_argument('--pdf', action='store_true',
+                        help=_('Produce PDF files (default: produce ODT)'))
+    parser.add_argument('--verbose', type=int, metavar=_("VERBOSITY"), default=0,
+                        help=_('Make the program more or less verbose. Useful values: [0,1,2]; defaults to 0.'))
+    parser.add_argument('templatePath', nargs='?',
+                        default=os.path.join(thisdir,"examples/sample1.odt"),
+                        help=_('path to the template ODT file'))
+    parser.add_argument('dataPath', nargs='?',
+                        default=os.path.join(thisdir,"examples/data.csv"),
+                        help=_('path to the CSV data file'))
+    args = parser.parse_args()
+    if args.pdf:
+        # check that the command unoconv is installed
+        if subprocess.call("type unoconv >/dev/null 2>&1", shell=True)!=0:
+            print(_("""You are probably missing the command 'unoconv',
+please install it (maybe a package named 'unoconv'?)"""))
+            sys.exit(1)
+    reporter=odfReport.Reporter(args.templatePath, args.dataPath, args.pdf, verbosity=args.verbose)
+    print (_("Saved files:"), ", ".join(reporter.run()))
